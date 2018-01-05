@@ -1,12 +1,11 @@
-import json
-import urllib.request
-import urllib.parse
 import os
+import urllib.parse
+import urllib.request
+import json
 
-# for DEV purposes only
-from types import SimpleNamespace
-from dotenv import load_dotenv, find_dotenv
-load_dotenv(find_dotenv())
+from pint import UnitRegistry
+from pint.errors import UndefinedUnitError, DimensionalityError
+ureg = UnitRegistry()
 
 def lambda_handler(event, context):
     return {
@@ -15,6 +14,7 @@ def lambda_handler(event, context):
 
 # hits edamam api for results
 # TODO consider having it hit our cache for search results and doing a map reduce
+# TODO in this case, the below method becomes generic and we pass an array of services to call
 def get_recipes(params):
     # TODO maybe do some NLP clean up and tagging of search terms here
     query = params['q']
@@ -40,7 +40,7 @@ def edamam_api(query):
 # takes json from edamam api and returns in open-recipe-format
 def format_open_recipe(edamam_json):
     src_json = edamam_json['recipe']
-    ingredients = list(map(extract_ingredients, src_json['ingredients']))
+    ingredients = list(map(extract_ingredient_data, src_json['ingredients']))
     return {
         'recipe_name': src_json['label'],
         'source_url': src_json['url'],
@@ -52,15 +52,8 @@ def format_open_recipe(edamam_json):
         # 'steps': TODO call scrapely
     }
 
-def extract_ingredients(ingredient_json):
-    from functools import reduce
-
-    word_list = [[]] + ingredient_json['text'].split(' ')
-    amount, unit, name = reduce(parse_ingredient_str, word_list)
-    print(amount)
-    print(unit)
-    print(name)
-    print(type(name))
+def extract_ingredient_data(ingredient_json):
+    amount, unit, name = parse_ingredient_str(ingredient_json['text'])
     return {
         'name': {
             'amount': amount,
@@ -69,14 +62,37 @@ def extract_ingredients(ingredient_json):
         }
     }
 
-def parse_ingredient_str(lyst, str):
-    if len(lyst) < 3:
-        lyst.append(str)
-    else:
-        lyst[2] += str + ' '
-    return lyst
+# assumes ingredient_str has three or more words
+# TODO optimize this method!!!!
+def parse_ingredient_str(ingredient_str):
+    word_list = ingredient_str.split(' ')
+    unit_word_cnt = 2
+    units = ' '.join(word_list[:unit_word_cnt])
+    quantity = try_parse_units(units)
+    if quantity == None:
+        quantity = try_parse_units(word_list[0])
+        unit_word_cnt = 1
+
+    if quantity == None:
+        return [1, 'each', ingredient_str]
+
+    if type(quantity) == int or type(quantity) == float:
+        return [quantity, 'each', ' '.join(word_list[1:])]
+
+    name = ' '.join(word_list[unit_word_cnt:])
+    return [quantity.magnitude, quantity.units.__str__(), name]
+
+def try_parse_units(s):
+    try:
+        return ureg.parse_expression(s)
+    except (UndefinedUnitError, DimensionalityError):
+        return None
 
 def test_searchRecipes():
+    from types import SimpleNamespace
+    from dotenv import load_dotenv, find_dotenv
+    load_dotenv(find_dotenv())
+
     queryStringParameters = {
         'q': 'potato pie'
     }
