@@ -54,13 +54,13 @@ def format_open_recipe(edamam_json):
 
 def extract_ingredient_data(ingredient_json):
     amount, unit, name = parse_ingredient_str(ingredient_json['text'])
-    return {
-        'name': {
-            'amount': amount,
-            'unit': unit,
-            # 'processing': processing
-        }
+    obj = {}
+    obj[name] = {
+        'amount': amount,
+        'unit': unit,
+        # 'processing': processing
     }
+    return obj
 
 # assumes ingredient_str has three or more words
 # TODO optimize this method!!!!
