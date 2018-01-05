@@ -37,25 +37,44 @@ def edamam_api(query):
     response = urllib.request.urlopen(url).read()
     return json.loads(response)['hits']
 
-# takes json fro edamam api and returns in open-recipe-format
+# takes json from edamam api and returns in open-recipe-format
 def format_open_recipe(edamam_json):
-    src_json = edamam['recipe']
-    recipe_json = {}
-    recipe_json['recipe_name'] = src_json['label']
-    recipe_json['source_url'] = src_json['url']
-    recipe_json['yields'] = {
-        'amount': src_json['yield'],
-        'unit': 'servings'
+    src_json = edamam_json['recipe']
+    ingredients = list(map(extract_ingredients, src_json['ingredients']))
+    return {
+        'recipe_name': src_json['label'],
+        'source_url': src_json['url'],
+        'yields': {
+            'amount': src_json['yield'],
+            'unit': 'servings'
+        },
+        'ingredients': ingredients,
+        # 'steps': TODO call scrapely
     }
 
-    recipe_json['ingredients'] = map(extract_ingredients, src_json['ingredients'])
-    recipe_json['recipe_name'] = src_json['']
-    recipe_json['recipe_name'] = src_json['']
-    recipe_json['recipe_name'] = src_json['']
-    return recipe_json
-
 def extract_ingredients(ingredient_json):
+    from functools import reduce
 
+    word_list = [[]] + ingredient_json['text'].split(' ')
+    amount, unit, name = reduce(parse_ingredient_str, word_list)
+    print(amount)
+    print(unit)
+    print(name)
+    print(type(name))
+    return {
+        'name': {
+            'amount': amount,
+            'unit': unit,
+            # 'processing': processing
+        }
+    }
+
+def parse_ingredient_str(lyst, str):
+    if len(lyst) < 3:
+        lyst.append(str)
+    else:
+        lyst[2] += str + ' '
+    return lyst
 
 def test_searchRecipes():
     queryStringParameters = {
