@@ -8,12 +8,11 @@ from .scrape_steps import lambda_handler as scrape_steps
 
 # hits edamam api for results
 # TODO consider having it hit our cache for search results and doing a map reduce
-# TODO in this case, the below method becomes generic and we pass an array of services to call
+# TODO in this case, the below method becomes generic
 def get_recipes(params):
     # TODO maybe do some NLP clean up and tagging of search terms here
     results = search_edamam(params)
-    # TODO filter search results by various params
-    # TODO sort by various params criteria
+    # TODO don't forget that themePlates-defined search criteria will need to be handled here
     recipes = map(format_open_recipe, results)
     return list(recipes)
 
