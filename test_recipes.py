@@ -18,9 +18,10 @@ def test_searchRecipes():
     print(res)
 
 def test_scrape_steps():
-    url = "http://allrecipes.com/recipe/217081/turkey-pinwheel/?src=VD_Summary"
+    url = "http://allrecipes.com/recipe/217899/mozzarella-stuffed-pesto-turkey-meatballs/?src=VD_Summary"
     res = scrape_steps({ 'url': url }, {})
-    print(res)
+    print(res[0])
+    print(len(res[0].keys()))
 
 # test_searchRecipes()
 test_scrape_steps()
