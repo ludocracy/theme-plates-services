@@ -1,5 +1,4 @@
 import re
-import scrapers
 import json
 import io
 from scrapely import Scraper
@@ -8,7 +7,7 @@ from scrapely import Scraper
 # TODO make this its own lambda later!!
 def lambda_handler(event, context):
     scraper = get_scraper(event['url'])
-    if !scraper:
+    if not scraper:
         return []
     # TODO if failure rate goes up
     # if scrapely fails:
@@ -19,14 +18,15 @@ def lambda_handler(event, context):
 
 # TODO later this should pull from db, assuming we'll need hundreds of scrapers
 def get_scraper(url):
-    domain = re.search(r'(?<=\/\/).+(?=\/)', url).group()
-    scraper_str = ''
-    with open('scrapers.json') as scrapers_file:
+    domain = re.search(r'(?<=\/\/)[\w\.-]+(?=\/)', url).group()
+    scraper_json = {}
+    with open('scrapers.json', 'r') as scrapers_file:
         scrapers_json = json.load(scrapers_file)
         if domain in scrapers_json:
-            scraper_str = scrapers_json[domain]
+            scraper_json = scrapers_json[domain]
         else:
             return None
 
-    scraper_file = io.StringIO(scraper_str)
+    print(scraper_json)
+    scraper_file = json.dump(scraper_json, io.StringIO(''))
     return Scraper.fromfile(scraper_file)
