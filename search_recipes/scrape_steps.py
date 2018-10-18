@@ -1,11 +1,14 @@
 import re
 import json
-import io
+import os
+from typing import Union
 from scrapely import Scraper
 
 # assumes event member 'url' with value of url to be scraped for recipe steps
 # TODO make this its own lambda later!!
-def lambda_handler(event, context):
+
+
+def lambda_handler(event: dict, context: dict) -> list:
     url = event['url']
     scraper = get_scraper(url)
     if not scraper:
@@ -17,16 +20,25 @@ def lambda_handler(event, context):
     # retry scrape.
     return scraper.scrape(url)
 
-# TODO later this should pull from db, assuming we'll need hundreds of scrapers
-def get_scraper(url):
-    domain = re.search(r'(?<=\/\/)[\w\.-]+(?=\/)', url).group()
-    scraper_file_name = ''
-    with open('scrapers.json', 'r') as scrapers_file:
+# TODO later this should pull from db, assuming we'll need hundreds of scrapers asdf asdf asdf asdf asdf asdf
+
+
+def get_scraper(url: str, scrapers_file_name: str = 'scrapers.json') -> Union[None, Scraper]:
+    domain = get_domain(url)
+    with open(get_file_path(scrapers_file_name), 'r') as scrapers_file:
         scrapers_json = json.load(scrapers_file)
         if domain in scrapers_json:
             scraper_file_name = scrapers_json[domain]
         else:
             return None
 
-    with open(scraper_file_name, 'r') as scraper_file:
+    with open(get_file_path(scraper_file_name), 'r') as scraper_file:
         return Scraper.fromfile(scraper_file)
+
+
+def get_file_path(file_name: str) -> str:
+    return f'{os.getcwd()}/search_recipes/{file_name}'
+
+
+def get_domain(url: str) -> str:
+    return re.search(r'(?<=\/\/)[\w\.-]+(?=\/)', url).group()

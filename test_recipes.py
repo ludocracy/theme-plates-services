@@ -1,6 +1,4 @@
 from types import SimpleNamespace
-from dotenv import load_dotenv, find_dotenv
-load_dotenv(find_dotenv())
 
 from search_recipes.search_recipes import lambda_handler
 from search_recipes.scrape_steps import lambda_handler as scrape_steps
