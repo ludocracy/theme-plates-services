@@ -14,12 +14,12 @@ ThemePlates differs from other recipe sharing sites because it:
 
 In addition, it will support standard CRUD for recipes, posts of cooked recipes, and up/downvoting of both.
 
-## Scrapely
-This app would not be possible without using the scrapely library. Every time a new recipe source is added we run the add_scraper.py script as follows:
+## Training recipe scrapers
+To train a scraper on a recipe source (currently based on domain name) run:
 ```
-python3 add_scraper.py <training params file> <recipe page url>
+python3 add_scraper.py <training_targets_file> <recipe_page_url>
 ```
-Training params file needs to follow the format of the json example below:
+Create a training_targets_file by copying the target text from the source HTML found at the recipe_page_url, and forming json as in the example below::
 ```
 {
   '0': 'heat pan to medium-low and some oil until it sizzles',
