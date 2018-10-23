@@ -20,6 +20,7 @@ def test_searchRecipes():
 def test_scrape_steps():
     url = "http://allrecipes.com/recipe/217899/mozzarella-stuffed-pesto-turkey-meatballs/?src=VD_Summary"
     res = scrape_steps({'url': url}, {})
+    print(res)
     assert str(res[0]['1'][0]).strip() == 'Preheat an oven to 375 degrees F (190 degrees C).'
 
 
